@@ -10,12 +10,6 @@ function randomString()
 
 app.use(bodyParser.urlencoded({extended: true}));
 
-app.post("/URLs", (request,response) =>
-{
-  console.log(request.body);
-  response.send("Ok");
-});
-
 app.set("view engine", "ejs");
 
 const database =
@@ -29,32 +23,54 @@ app.get("/", (request, response) =>
   response.send("Hello!");
 });
 
-app.get("/urls.json", (request, response) =>
-{
-  const template = { urls: database };
-  response.render("Index", template);
-});
-
 app.get("/hello", (request, response) =>
 {
   response.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-app.get("/URLs/New", (request, response) =>
+app.get("/urls", (request, response) =>
 {
-  response.render("URLs_New");
+  const template = { urls: database };
+  response.render("Index", template);
+});
+
+app.post("/urls", (request,response) =>
+{
+  console.log(request.body);
+  response.send("Ok");
+});
+
+app.get("/urls/new", (request, response) =>
+{
+  const template = { urls: database };
+  response.render("New", template);
 });
 
 app.get("/urls/:shortURL", (request, response) =>
 {
-  const template = { shortURL: request.params.shortURL, longURL: request.params.longURL };
+  const template = { shortURL: request.params.shortURL};
   response.render("Show", template);
 });
 
-app.get("URLs/:shortURL", (request, response) =>
+app.get("/urls/:shortURL", (request, response) =>
 {
   response.redirect(longURL);
 });
+
+app.post("/urls/:shortURL/delete", (request, response) =>
+{
+  delete database.request.params.shortURL;
+  console.log(response(body));
+  console.log(request.params,shortURL);
+  response.redirect("/urls");
+});
+//ALWAYS console.log response(body)/response.body and/or request.params
+
+app.post("/urls/:shortURL/edit", (request, response) =>
+{
+  //edit database[request.params.shortURL];
+  response.redirect("/urls");
+})
 
 app.listen(PORT, () =>
 {
