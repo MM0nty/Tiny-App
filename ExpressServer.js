@@ -59,9 +59,9 @@ app.get("/urls/:shortURL", (request, response) =>
 
 app.post("/urls/:shortURL/delete", (request, response) =>
 {
-  delete database.request.params.shortURL;
-  console.log(response(body));
-  console.log(request.params,shortURL);
+  delete database[request.params.shortURL];
+  console.log(database);
+  console.log(request.params.shortURL);
   response.redirect("/urls");
 });
 //ALWAYS console.log response(body)/response.body and/or request.params
