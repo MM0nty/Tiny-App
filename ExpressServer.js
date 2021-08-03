@@ -17,12 +17,19 @@ app.get("/", (request, response) =>
 
 app.get("/urls.json", (request, response) =>
 {
-  response.json(database);
+  const template = { urls: database };
+  response.render("Index", template);
 });
 
 app.get("/hello", (request, response) =>
 {
   response.send("<html><body>Hello <b>World</b></body></html>\n");
+});
+
+app.get("/urls/:shortURL", (request, response) =>
+{
+  const template = { shortURL: request.params.shortURL, longURL: request.params.longURL };
+  response.render("Show", template);
 });
 
 app.listen(PORT, () =>
