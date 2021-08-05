@@ -54,17 +54,18 @@ app.post("/urls", (request, response) => {
   console.log(request.body);
   response.send("Ok");
 //   console.log(request.body.longURL);
-//   let longURL = request.body.longURL;
-//   urlDatabase[longURL];
+  let longURL = request.body.longURL;
+  urlDatabase[longURL];
 //   const template = { urls: urlDatabase, username: request.cookies["username"], };
-//   const urlContent = request.body.urlContent;
+  const urlContent = request.body.urlContent;
   const urlID = Math.random().toString(36).slice(2, 8);
-//   const newUrl = {
-//     id: urlID,
-//     shortURL: urlContent
-//   }
-//   urlDatabase[urlID] = newUrl;
-//   response.redirect("/urls");
+  response.send("200 Status code");
+  const newUrl = {
+    id: urlID,
+    shortURL: urlContent
+  }
+  urlDatabase[urlID] = newUrl;
+  response.redirect("/urls/:shortURL");
 });
 
 // //request.body = information from forms
@@ -81,9 +82,9 @@ app.get("/urls/:shortURL", (request, response) => {
   response.render("Show", template);
 });
 
-// app.get("/u/:shortURL", (request, response) => {
-//   response.redirect(longURL);
-// });
+app.get("/u/:shortURL", (request, response) => {
+  response.redirect(longURL);
+});
 
 // app.get("/urls/:shortURL/show", (request, response) => {
 //   response.redirect("/urls/:shortURL");
