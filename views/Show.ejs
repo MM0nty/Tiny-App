@@ -7,13 +7,17 @@
     integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
   <title>URL - Tiny App Example</title>
 </head>
+
 <body>
-  <!--// <%- include("Partials/_Header") %> -->
+  <%- include("Partials/_Header") %>
     <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
-        <h5 class="card-title">Tiny URL for: <%= longURL %></h5>
-        <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
+        <h5 class="card-title">Tiny URL for: <%= longURL %>
+        </h5>
+        <p class="card-text">Short URL: <a href="/u/<%= shortURL %>">
+            <%= shortURL %>
+          </a></p>
         <!-- <form method="POST" action="/urls">
           <label>New URL: <input type="text"></label>
           <button type="submit">Submit</button>
