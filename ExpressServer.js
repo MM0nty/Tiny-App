@@ -50,28 +50,30 @@ app.get("/urls", (request, response) => {
   response.render("Index", template);
 });
 
-// app.post("/urls", (request, response) => {
+app.post("/urls", (request, response) => {
+  console.log(request.body);
+  response.send("Ok");
 //   console.log(request.body.longURL);
 //   let longURL = request.body.longURL;
 //   urlDatabase[longURL];
 //   const template = { urls: urlDatabase, username: request.cookies["username"], };
 //   const urlContent = request.body.urlContent;
-//   const urlID = Math.random().toString(36).slice(2, 8);
+  const urlID = Math.random().toString(36).slice(2, 8);
 //   const newUrl = {
 //     id: urlID,
 //     shortURL: urlContent
 //   }
 //   urlDatabase[urlID] = newUrl;
 //   response.redirect("/urls");
-// });
+});
 
 // //request.body = information from forms
 // //request.params = information from  url
 
-// app.get("/urls/new", (request, response) => {
-//   const template = { urls: urlDatabase, username: request.cookies["username"], };
-//   response.render("New");
-// });
+app.get("/urls/new", (request, response) => {
+  // const template = { urls: urlDatabase, username: request.cookies["username"], };
+  response.render("New");
+});
 
 app.get("/urls/:shortURL", (request, response) => {
   const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL] };//, username: request.cookies["username"] };
