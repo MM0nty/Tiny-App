@@ -73,11 +73,11 @@ app.get("/urls", (request, response) => {
 //   response.render("New");
 // });
 
-// app.get("/urls/:shortURL", (request, response) => {
-//   const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL], username: request.cookies["username"] };
-//   //("/urls/:shortURL" === shortURL: request.params.shortURL
-//   response.render("Show", template);
-// });
+app.get("/urls/:shortURL", (request, response) => {
+  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL] };//, username: request.cookies["username"] };
+  //("/urls/:shortURL" === shortURL: request.params.shortURL
+  response.render("Show", template);
+});
 
 // app.get("/u/:shortURL", (request, response) => {
 //   response.redirect(longURL);
