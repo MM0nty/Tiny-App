@@ -92,10 +92,10 @@ app.get("/u/:shortURL", (request, response) => {
 // }); //handler = post or get
 // //post => SEND DATA
 
-// app.post("/urls/:shortURL/delete", (request, response) => {
-//   delete urlDatabase[request.params.shortURL];
-//   response.redirect("/urls");
-// });
+app.post("/urls/:shortURL/delete", (request, response) => {
+  delete urlDatabase[request.params.shortURL];
+  response.redirect("/urls");
+});
 // //:variable = for express
 // //ALWAYS console.log response(body)/response.body and/or request.params
 
