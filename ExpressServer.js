@@ -45,10 +45,10 @@ app.get("/hello", (request, response) => {
 /**/
 }
 
-// app.get("/urls", (request, response) => {
-//   const template = { urls: urlDatabase, username: request.cookies["username"], };
-//   response.render("Index", template);
-// });
+app.get("/urls", (request, response) => {
+  const template = { urls: urlDatabase }; //username: request.cookies["username"],
+  response.render("Index", template);
+});
 
 // app.post("/urls", (request, response) => {
 //   console.log(request.body.longURL);
