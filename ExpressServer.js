@@ -29,8 +29,6 @@ const users = {
   }
 }
 
-{
-
 app.get("/", (request, response) => {
   response.send("Hello!");
 });
@@ -42,55 +40,59 @@ app.get("/urls.json", (request, response) => {
 app.get("/hello", (request, response) => {
   response.send("<html><body>Hello <b>World</b></body></html>\n");
 });
-/**/
-}
 
 app.get("/urls", (request, response) => {
-  const template = { urls: urlDatabase }; //username: request.cookies["username"],
+  const template = { urls: urlDatabase, username: request.cookies["username"] }
   response.render("Index", template);
 });
 
 app.post("/urls", (request, response) => {
   console.log(request.body);
-  response.send("Ok");
-//   console.log(request.body.longURL);
-  let longURL = request.body.longURL;
-  urlDatabase[longURL];
-//   const template = { urls: urlDatabase, username: request.cookies["username"], };
-  const urlContent = request.body.urlContent;
+
+  //   console.log(request.body.longURL);
+  // let longURL = request.body.longURL;
+  // urlDatabase[longURL];
+  const template = { urls: urlDatabase, username: request.cookies["username"], };
+  const longURL = request.body.longURL;
+  // console.log(request.body.urlContent);
   const urlID = Math.random().toString(36).slice(2, 8);
-  response.send("200 Status code");
+  //response.send("200 Status code");
   const newUrl = {
     id: urlID,
-    shortURL: urlContent
+    shortURL: longURL
   }
-  urlDatabase[urlID] = newUrl;
+  urlDatabase[urlID] = longURL;
+  console.log(urlDatabase);
   response.redirect("/urls/:shortURL");
+  //response.send("Ok");
 });
-
 // //request.body = information from forms
 // //request.params = information from  url
 
 app.get("/urls/new", (request, response) => {
-  // const template = { urls: urlDatabase, username: request.cookies["username"], };
-  response.render("New");
+  const template = { urls: urlDatabase, username: request.cookies["username"], };
+  response.render("New", template);
 });
 
 app.get("/urls/:shortURL", (request, response) => {
-  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL] };//, username: request.cookies["username"] };
+  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL], username: request.cookies["username"] };
   //("/urls/:shortURL" === shortURL: request.params.shortURL
   response.render("Show", template);
 });
 
-app.get("/u/:shortURL", (request, response) => {
+app.get("/u/:shortURL", (request, response) => { //get: show page
   response.redirect(longURL);
 });
 
-// app.get("/urls/:shortURL/show", (request, response) => {
-//   response.redirect("/urls/:shortURL");
-//   response.redirect("/urls");
 // }); //handler = post or get
 // //post => SEND DATA
+
+app.post("/urls/:shortURL", (request, response) => {
+  shortURL = request.params.shortURL; //accessing the variable
+  const longURL = request.body.longURL;
+  urlDatabase[shortURL] = longURL;
+  response.redirect("/urls");
+}) //:variable = making variable
 
 app.post("/urls/:shortURL/delete", (request, response) => {
   delete urlDatabase[request.params.shortURL];
@@ -99,14 +101,14 @@ app.post("/urls/:shortURL/delete", (request, response) => {
 // //:variable = for express
 // //ALWAYS console.log response(body)/response.body and/or request.params
 
-// app.get("/urls/register", (request, response) => {
+// app.get("/register", (request, response) => {
 //   response.cookie("email");
 //   const template = { email: request.cookies["email"] };
 
 //   response.render("Register", template);
 // });
 
-// app.post("/urls/register", (request, response) => {
+// app.post("/register", (request, response) => {
 //   response.cookie("userID");
 //   if (email === "" || password === "" || email === users[email]) { response.send("Error code 400"); };
 //   /*
@@ -114,35 +116,35 @@ app.post("/urls/:shortURL/delete", (request, response) => {
 //   response.redirect("/urls");
 // });
 
-// app.get("/urls/login", (request, response) => {
+// app.get("/login", (request, response) => {
 
 // });
 
-// app.post("/urls/login", (request, response) => {
-//   /*
-//       <% if (!username) { %>
-//     <form method="POST" action="/urls/login"><input type="text" name="username" placeholder="Username">
-//       <button type="submit">Submit</button>
-//     </form>
-//   <% } else { %>
-//     Logged in as: <%= username %><form method="POST" action="/urls/logout"><button type="submit">Logout</button></form>
-//     <% } %>
-//   */
-//   if (email !== users[email] || email === users[email] && password !== users[password]) { response.send("Error code 403"); }
-//   else if (email === users[email] && password === users[password]) {
-//     response.cookie("userID");
-//     response.redirect("/urls");
-//   };
-//   response.cookie("username", request.body.username);
-//   console.log(request.body);
-//   const template = { username: request.cookies["username"], urls: urlDatabase };
-//   response.redirect("/urls");
-// });
+app.post("/login", (request, response) => {
+  /*
+      <% if (!username) { %>
+    <form method="POST" action="/urls/login"><input type="text" name="username" placeholder="Username">
+      <button type="submit">Submit</button>
+    </form>
+  <% } else { %>
+    Logged in as: <%= username %><form method="POST" action="/urls/logout"><button type="submit">Logout</button></form>
+    <% } %>
+  */
+  //   if (email !== users[email] || email === users[email] && password !== users[password]) { response.send("Error code 403"); }
+  //   else if (email === users[email] && password === users[password]) {
+  //     response.cookie("userID");
+  //     response.redirect("/urls");
+  //   };
+  response.cookie("username", request.body.username);
+  //   console.log(request.body);
+  const template = { username: request.cookies["username"], urls: urlDatabase };
+  response.redirect("/urls");
+});
 
-// app.post("/urls/logout", (request, response) => {
-//   response.clearCookie("username");
-//   response.redirect("/urls");
-// });
+app.post("/logout", (request, response) => {
+  response.clearCookie("username");
+  response.redirect("/urls");
+});
 
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}!`);
