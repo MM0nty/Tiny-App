@@ -102,13 +102,11 @@ app.post("/urls/:shortURL/delete", (request, response) => {
 // //ALWAYS console.log response(body)/response.body and/or request.params
 
 app.get("/register", (request, response) => {
-  const template = { email: request.cookies["email"], email: request.cookies["email"] };
-
+  const template = { email: request.cookies["email"] };
   response.render("Register", template);
 });
 
 app.post("/register", (request, response) => {
-    
   const { email, password } = request.body;
     if (email === "" || password === "" || email === userDatabase[email]) { response.status(400).send("Error code 400"); };
   const id = Math.random().toString(36).slice(2, 8);
@@ -121,7 +119,8 @@ app.post("/register", (request, response) => {
 });
 
 app.get("/login", (request, response) => {
- const template = { email: request.cookies["email"], email: request.cookies["email"] };
+ const template = { email: request.cookies["email"] };
+ response.render("Login", template);
 });
 
 // const authenticateUser = (email, password) => {
@@ -143,20 +142,13 @@ app.get("/login", (request, response) => {
 
 
 app.post("/login", (request, response) => {
-//   const { email, password } = request.body;
+  const { email, password } = request.body;
+  if (email === userDatabase[email]) { response.status(400).send("Error code 400"); };
 //   const user = authenticateUser(email, password);
 // if (user) {
 //   response.cookie(userID, userID)
 // }
-  /*
-      <% if (!email) { %>
-    <form method="POST" action="/urls/login"><input type="text" name="email" placeholder="email">
-      <button type="submit">Submit</button>
-    </form>
-  <% } else { %>
-    Logged in as: <%= email %><form method="POST" action="/urls/logout"><button type="submit">Logout</button></form>
-    <% } %>
-  */
+
   //   if (email !== users[email] || email === users[email] && password !== users[password]) { response.send("Error code 403"); }
   //   else if (email === users[email] && password === users[password]) {
   //     response.cookie("userID");
