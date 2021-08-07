@@ -5,15 +5,15 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
     integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-  <title>Tiny App Registration</title>
+  <title>Tiny App Login</title>
 </head>
 
 <body>
   <%- include("Partials/_Header") %>
-    <form method="POST" action="/register">
+    <form method="POST" action="/login">
       <input type="email" name="email" label="Email address: "">
       <input type="password" name="password" label="Password: ">
-      <button type="submit">Register</button>
+      <button type="submit">Login</button>
     </form>
     <!-- Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

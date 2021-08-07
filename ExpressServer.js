@@ -16,7 +16,7 @@ const urlDatabase =
   "9sm5xK": "https://www.google.com"
 };
 
-const users = {
+const userDatabase = {
   "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
@@ -42,7 +42,7 @@ app.get("/hello", (request, response) => {
 });
 
 app.get("/urls", (request, response) => {
-  const template = { urls: urlDatabase, username: request.cookies["username"] }
+  const template = { urls: urlDatabase, email: request.cookies["email"] }
   response.render("Index", template);
 });
 
@@ -52,7 +52,7 @@ app.post("/urls", (request, response) => {
   //   console.log(request.body.longURL);
   // let longURL = request.body.longURL;
   // urlDatabase[longURL];
-  const template = { urls: urlDatabase, username: request.cookies["username"], };
+  const template = { urls: urlDatabase, email: request.cookies["email"], };
   const longURL = request.body.longURL;
   // console.log(request.body.urlContent);
   const urlID = Math.random().toString(36).slice(2, 8);
@@ -70,12 +70,12 @@ app.post("/urls", (request, response) => {
 // //request.params = information from  url
 
 app.get("/urls/new", (request, response) => {
-  const template = { urls: urlDatabase, username: request.cookies["username"], };
+  const template = { urls: urlDatabase, email: request.cookies["email"], };
   response.render("New", template);
 });
 
 app.get("/urls/:shortURL", (request, response) => {
-  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL], username: request.cookies["username"] };
+  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL], email: request.cookies["email"] };
   //("/urls/:shortURL" === shortURL: request.params.shortURL
   response.render("Show", template);
 });
@@ -101,33 +101,60 @@ app.post("/urls/:shortURL/delete", (request, response) => {
 // //:variable = for express
 // //ALWAYS console.log response(body)/response.body and/or request.params
 
-// app.get("/register", (request, response) => {
-//   response.cookie("email");
-//   const template = { email: request.cookies["email"] };
+app.get("/register", (request, response) => {
+  const template = { email: request.cookies["email"], email: request.cookies["email"] };
 
-//   response.render("Register", template);
-// });
+  response.render("Register", template);
+});
 
-// app.post("/register", (request, response) => {
-//   response.cookie("userID");
-//   if (email === "" || password === "" || email === users[email]) { response.send("Error code 400"); };
-//   /*
-//   */
-//   response.redirect("/urls");
-// });
+app.post("/register", (request, response) => {
+    
+  const { email, password } = request.body;
+    if (email === "" || password === "" || email === userDatabase[email]) { response.status(400).send("Error code 400"); };
+  const id = Math.random().toString(36).slice(2, 8);
+  response.cookie("email", email);
+  response.cookie("id", id);
+  const newUser = { id, email, password };
+  userDatabase[id] = newUser;
+  console.log(request.params.userDatabase);
+  response.redirect("/urls");
+});
 
-// app.get("/login", (request, response) => {
+app.get("/login", (request, response) => {
+ const template = { email: request.cookies["email"], email: request.cookies["email"] };
+});
 
-// });
+// const authenticateUser = (email, password) => {
+//   if (user) {
+//     if (user.password === password) {
+//       return user
+//     }
+//     return null;
+//   }
+//   return null;
+// }
+
+
+// app.get("/", (request, response) => {
+//   const user = usersDatabase[request.cookies.id];
+//   const template = { name: user ? user.name : "" };
+//   response.render("Index", template);
+// })
+
 
 app.post("/login", (request, response) => {
+//   const { email, password } = request.body;
+//   const user = authenticateUser(email, password);
+// if (user) {
+//   response.cookie(userID, userID)
+// }
   /*
-      <% if (!username) { %>
-    <form method="POST" action="/urls/login"><input type="text" name="username" placeholder="Username">
+      <% if (!email) { %>
+    <form method="POST" action="/urls/login"><input type="text" name="email" placeholder="email">
       <button type="submit">Submit</button>
     </form>
   <% } else { %>
-    Logged in as: <%= username %><form method="POST" action="/urls/logout"><button type="submit">Logout</button></form>
+    Logged in as: <%= email %><form method="POST" action="/urls/logout"><button type="submit">Logout</button></form>
     <% } %>
   */
   //   if (email !== users[email] || email === users[email] && password !== users[password]) { response.send("Error code 403"); }
@@ -135,14 +162,14 @@ app.post("/login", (request, response) => {
   //     response.cookie("userID");
   //     response.redirect("/urls");
   //   };
-  response.cookie("username", request.body.username);
+  response.cookie("email", request.body.email);
   //   console.log(request.body);
-  const template = { username: request.cookies["username"], urls: urlDatabase };
+  const template = { email: request.cookies["email"], urls: urlDatabase };
   response.redirect("/urls");
 });
 
 app.post("/logout", (request, response) => {
-  response.clearCookie("username");
+  response.clearCookie("email");
   response.redirect("/urls");
 });
 
