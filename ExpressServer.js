@@ -18,12 +18,12 @@ const urlDatabase =
 
 const userDatabase = {
   "userRandomID": {
-    id: "userRandomID",
+    userID: "userRandomID",
     email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
   "user2RandomID": {
-    id: "user2RandomID",
+    userID: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk"
   }
@@ -48,19 +48,14 @@ app.get("/urls", (request, response) => {
 
 app.post("/urls", (request, response) => {
   console.log(request.body);
-
-  //   console.log(request.body.longURL);
-  // let longURL = request.body.longURL;
-  // urlDatabase[longURL];
-  const template = { urls: urlDatabase, email: request.cookies["email"], };
   const longURL = request.body.longURL;
   // console.log(request.body.urlContent);
   const urlID = Math.random().toString(36).slice(2, 8);
   //response.send("200 Status code");
-  const newUrl = {
-    id: urlID,
-    shortURL: longURL
-  }
+  // const newUrl = {
+  //   urlID: urlID,
+  //   shortURL: longURL
+  // }
   urlDatabase[urlID] = longURL;
   console.log(urlDatabase);
   response.redirect("/urls/:shortURL");
@@ -98,7 +93,6 @@ app.post("/urls/:shortURL/delete", (request, response) => {
   delete urlDatabase[request.params.shortURL];
   response.redirect("/urls");
 });
-// //:variable = for express
 // //ALWAYS console.log response(body)/response.body and/or request.params
 
 app.get("/register", (request, response) => {
@@ -108,57 +102,55 @@ app.get("/register", (request, response) => {
 
 app.post("/register", (request, response) => {
   const { email, password } = request.body;
-    if (email === "" || password === "" || email === userDatabase[email]) { response.status(400).send("Error code 400"); };
-  const id = Math.random().toString(36).slice(2, 8);
+  const user = findUser(userDatabase, email);
+  // console.log(userDatabase[email]);
+  if (email === "" || password === "" || user) {
+    response.status(400).send("Registration failed. Error code 400");
+  };
+  const userID = Math.random().toString(36).slice(2, 8);
   response.cookie("email", email);
-  response.cookie("id", id);
-  const newUser = { id, email, password };
-  userDatabase[id] = newUser;
-  console.log(request.params.userDatabase);
+  response.cookie("userID", userID);
+  const newUser = { userID, email, password };
+  userDatabase[userID] = newUser;
+  console.log(userDatabase);
   response.redirect("/urls");
 });
 
 app.get("/login", (request, response) => {
- const template = { email: request.cookies["email"] };
- response.render("Login", template);
+  const template = { email: request.cookies["email"] };
+  response.render("Login", template);
 });
-
-// const authenticateUser = (email, password) => {
-//   if (user) {
-//     if (user.password === password) {
-//       return user
-//     }
-//     return null;
-//   }
-//   return null;
-// }
-
-
-// app.get("/", (request, response) => {
-//   const user = usersDatabase[request.cookies.id];
-//   const template = { name: user ? user.name : "" };
-//   response.render("Index", template);
-// })
 
 
 app.post("/login", (request, response) => {
+  // request.body { email: "email", password: "password" }
   const { email, password } = request.body;
-  if (email === userDatabase[email]) { response.status(400).send("Error code 400"); };
-//   const user = authenticateUser(email, password);
-// if (user) {
-//   response.cookie(userID, userID)
-// }
-
-  //   if (email !== users[email] || email === users[email] && password !== users[password]) { response.send("Error code 403"); }
-  //   else if (email === users[email] && password === users[password]) {
-  //     response.cookie("userID");
-  //     response.redirect("/urls");
-  //   };
+  const user = verify(email, password);
+  if (!user) {
+    response.status(403).send("Error code 403");
+  }
+  response.cookie("userID", request.body.userID);
   response.cookie("email", request.body.email);
   //   console.log(request.body);
-  const template = { email: request.cookies["email"], urls: urlDatabase };
   response.redirect("/urls");
 });
+
+
+const findUser = function (userDatabase, email) {
+  for (const user in userDatabase) {
+    if (email === userDatabase[user].email) {
+      return userDatabase[user];
+    }
+  }
+}
+
+const verify = (email, password) => {
+  const user = findUser(userDatabase, email);
+  if (user && user.password === password) {
+    return user
+  }
+  return null;
+}
 
 app.post("/logout", (request, response) => {
   response.clearCookie("email");

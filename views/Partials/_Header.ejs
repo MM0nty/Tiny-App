@@ -11,11 +11,14 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
+    <% if (email) { %>
+      <%= email %>
+    <% } %>
     <form method="GET" action="/register">
       <button type="submit">Register</button>
     </form>
     <% if (!email) { %>
-      <form method="POST" action="/login">
+      <form method="GET" action="/login">
         <button type="submit">Login</button>
       </form>
       <% } else { %>
