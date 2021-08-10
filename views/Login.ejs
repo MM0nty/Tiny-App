@@ -5,18 +5,19 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
     integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-  <title>Tiny App Registration</title>
+  <title>Tiny App Login</title>
 </head>
 
 <body>
   <%- include("Partials/_Header") %>
     <div><br>
+      <h2>LOGIN</h2>
       <form method="POST" action="/login">
-        <label>Email address:</label>
+        <div><label>Email address:</label></div>
         <input type="email" name="email">
     </div>
     <div>
-      <label>Password:</label>
+      <div><label>Password:</label></div>
       <input type="password" name="password">
       <div><button type="submit">Login</button></div>
       </form>
