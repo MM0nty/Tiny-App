@@ -29,7 +29,6 @@ const urlDatabase =
 };
 
 app.get("/", (request, response) => {
-  console.log(hashedPassword);
   response.send("Hello!");
 });
 
@@ -42,15 +41,15 @@ app.get("/hello", (request, response) => {
 });
 
 app.get("/urls", (request, response) => {
-
-  const template = { urls: urlDatabase, email: request.cookies["email"] }
+  const template = { urls: urlDatabase, email: request.session.email }
+  console.log(request.session.email);
   response.render("Index", template);
 });
 
 app.post("/urls", (request, response) => {
   console.log(request.body);
   const longURL = request.body.longURL;
-  const userID = request.cookies["userID"];
+  const userID = request.session.userID;
   // console.log(request.body.urlContent);
   const urlID = Math.random().toString(36).slice(2, 8);
   //response.send("200 Status code");
@@ -65,8 +64,8 @@ app.post("/urls", (request, response) => {
 
 app.get("/urls/new", (request, response) => {
 
-  const template = { urls: urlDatabase, email: request.cookies["email"], };
-  if (!request.cookies["email"]) {
+  const template = { urls: urlDatabase, email: request.session.email };
+  if (!request.session.email) {
     console.log("Error code 403. Please login to make new tiny URLs");
     response.redirect("/login");
   }
@@ -74,8 +73,7 @@ app.get("/urls/new", (request, response) => {
 });
 
 app.get("/urls/:shortURL", (request, response) => {
-  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL].longURL, email: request.cookies["email"] };
-  console.log(urlDatabase[request.params.shortURL].longURL);
+  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL].longURL, email: request.session.email };
   //("/urls/:shortURL" === shortURL: request.params.shortURL
   response.render("Show", template);
 });
@@ -102,7 +100,7 @@ app.post("/urls/:shortURL/delete", (request, response) => {
 //ALWAYS console.log response(body)/response.body and/or request.params
 
 app.get("/register", (request, response) => {
-  const template = { email: request.cookies["email"] };
+  const template = { email: request.session.email };
   response.render("Register", template);
 });
 
@@ -114,8 +112,8 @@ app.post("/register", (request, response) => {
     response.status(400).send("Registration failed. Error code 400");
   };
   const userID = Math.random().toString(36).slice(2, 8);
-  response.cookie("email", email);
-  response.cookie("userID", userID);
+  request.session.email = email;
+  request.session.userID = userID;
   const salt = bcrypt.genSaltSync(10);
   const hashed = bcrypt.hashSync(password, salt);
   const newUser = { userID, email, password: hashed };
@@ -125,27 +123,25 @@ app.post("/register", (request, response) => {
 });
 
 app.get("/login", (request, response) => {
-  const template = { email: request.cookies["email"] };
+  const template = { email: request.session.email };
   response.render("Login", template);
 });
 
 
 app.post("/login", (request, response) => {
-  // request.body { email: "email", password: "password" }
   const { email, password } = request.body;
-  
   const user = verify(email, password);
   if (!user) {
     response.status(403).send("Error code 403");
   }
-  response.cookie("userID", request.body.userID);
-  response.cookie("email", request.body.email);
+  request.session.email = email;
+  response.session.userID = userID;
   //   console.log(request.body);
   response.redirect("/urls");
 });
 
 app.post("/logout", (request, response) => {
-  response.clearCookie("email");
+  request.session = null;
   response.redirect("/urls");
 });
 
