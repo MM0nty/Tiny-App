@@ -2,13 +2,11 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
-// const cookieParser = require("cookie-parser");
 const bcrypt = require("bcryptjs");
 const cookieSession = require("cookie-session");
 const { userDatabase, findUser, verify } = require("./Helpers");
 
 app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(cookieParser());
 app.use(cookieSession({
   name: "session",
   keys: ["key0"]
@@ -51,12 +49,10 @@ app.post("/urls", (request, response) => {
   const longURL = request.body.longURL;
   const userID = request.session.userID;
   const urlID = Math.random().toString(36).slice(2, 8);
-  //response.send("200 Status code");
   const newURL = { urlID, longURL, userID };
   urlDatabase[urlID] = newURL;
   console.log(urlDatabase);
   response.redirect("/urls/:shortURL");
-  //response.send("Ok");
 });
 
 //Create new URL
@@ -76,7 +72,7 @@ app.get("/urls/:shortURL", (request, response) => {
 
 app.get("/u/:shortURL", (request, response) => {
   const shortURL = request.params.shortURL;
-  const longURL = urlDatabase[shortURL].longURL; //longURL is object
+  const longURL = urlDatabase[shortURL].longURL;
   response.redirect(longURL);
 });
 
@@ -103,7 +99,6 @@ app.get("/register", (request, response) => {
 app.post("/register", (request, response) => {
   const { email, password } = request.body;
   const user = findUser(userDatabase, email);
-  // console.log(userDatabase[email]);
   if (email === "" || password === "" || user) {
     response.status(400).send("Registration failed. Error code 400");
   }
@@ -132,8 +127,6 @@ app.post("/login", (request, response) => {
     response.status(403).send("Error code 403");
   }
   request.session.email = email;
-  // request.session.userID = userID;
-  //   console.log(request.body);
   response.redirect("/urls");
 });
 
