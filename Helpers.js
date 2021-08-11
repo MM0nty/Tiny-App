@@ -11,27 +11,28 @@ const userDatabase = {
     email: "user2@example.com",
     password: "dishwasher-funk"
   }
-}
+};
 
-const findUser = function (userDatabase, email) { //same Database but not same Database
+//find if email already used
+const findUser = function(userDatabase, email) {
   for (const user in userDatabase) {
-    console.log("User ", user);
-    if (email === userDatabase[user].email) { //user is string
+    if (email === userDatabase[user].email) {
       return userDatabase[user];
     }
   }
   return null;
-}
+};
 
+//verify login
 const verify = (email, password) => {
   const user = findUser(userDatabase, email);
   const match = bcrypt.compareSync(password, user.password);
   console.log("Password ", password);
   console.log("User.password ", user.password);
   if (user && match === true) {
-    return user
+    return user;
   }
-  return null;
-}
+  return undefined;
+};
 
 module.exports = { userDatabase, findUser, verify };

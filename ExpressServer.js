@@ -1,14 +1,14 @@
 const express = require("express");
 const app = express();
-const PORT = 8080; //8080 is default port
+const PORT = 8080;
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
+// const cookieParser = require("cookie-parser");
 const bcrypt = require("bcryptjs");
 const cookieSession = require("cookie-session");
 const { userDatabase, findUser, verify } = require("./Helpers");
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
+// app.use(cookieParser());
 app.use(cookieSession({
   name: "session",
   keys: ["key0"]
@@ -16,8 +16,7 @@ app.use(cookieSession({
 
 app.set("view engine", "ejs");
 
-const urlDatabase =
-{
+const urlDatabase = {
   "b2xVn2": {
     longURL: "https://www.lighthouselabs.ca",
     userID: "userRandomID"
@@ -40,8 +39,9 @@ app.get("/hello", (request, response) => {
   response.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+//show index page
 app.get("/urls", (request, response) => {
-  const template = { urls: urlDatabase, email: request.session.email }
+  const template = { urls: urlDatabase, email: request.session.email };
   console.log(request.session.email);
   response.render("Index", template);
 });
@@ -50,7 +50,6 @@ app.post("/urls", (request, response) => {
   console.log(request.body);
   const longURL = request.body.longURL;
   const userID = request.session.userID;
-  // console.log(request.body.urlContent);
   const urlID = Math.random().toString(36).slice(2, 8);
   //response.send("200 Status code");
   const newURL = { urlID, longURL, userID };
@@ -59,11 +58,9 @@ app.post("/urls", (request, response) => {
   response.redirect("/urls/:shortURL");
   //response.send("Ok");
 });
-//request.body = information from forms
-//request.params = information from  url
 
+//Create new URL
 app.get("/urls/new", (request, response) => {
-
   const template = { urls: urlDatabase, email: request.session.email };
   if (!request.session.email) {
     console.log("Error code 403. Please login to make new tiny URLs");
@@ -74,43 +71,42 @@ app.get("/urls/new", (request, response) => {
 
 app.get("/urls/:shortURL", (request, response) => {
   const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL].longURL, email: request.session.email };
-  //("/urls/:shortURL" === shortURL: request.params.shortURL
   response.render("Show", template);
 });
 
-app.get("/u/:shortURL", (request, response) => { //get: show page
+app.get("/u/:shortURL", (request, response) => {
   const shortURL = request.params.shortURL;
   const longURL = urlDatabase[shortURL].longURL; //longURL is object
-  response.redirect(longURL); //longURL not defined
+  response.redirect(longURL);
 });
-//handler = post or get
-//post => SEND DATA
 
 app.post("/urls/:shortURL", (request, response) => {
-  const shortURL = request.params.shortURL; //accessing the variable
+  const shortURL = request.params.shortURL;
   const longURL = request.body.longURL;
   urlDatabase[shortURL] = longURL;
   response.redirect("/urls");
-}) //:variable = making variable
+});
 
+//deleting an URL
 app.post("/urls/:shortURL/delete", (request, response) => {
   delete urlDatabase[request.params.shortURL];
   response.redirect("/urls");
 });
-//ALWAYS console.log response(body)/response.body and/or request.params
 
+//show register page
 app.get("/register", (request, response) => {
   const template = { email: request.session.email };
   response.render("Register", template);
 });
 
+//registering
 app.post("/register", (request, response) => {
   const { email, password } = request.body;
   const user = findUser(userDatabase, email);
   // console.log(userDatabase[email]);
   if (email === "" || password === "" || user) {
     response.status(400).send("Registration failed. Error code 400");
-  };
+  }
   const userID = Math.random().toString(36).slice(2, 8);
   request.session.email = email;
   request.session.userID = userID;
@@ -122,12 +118,13 @@ app.post("/register", (request, response) => {
   response.redirect("/urls");
 });
 
+//show login page
 app.get("/login", (request, response) => {
   const template = { email: request.session.email };
   response.render("Login", template);
 });
 
-
+//logging in
 app.post("/login", (request, response) => {
   const { email, password } = request.body;
   const user = verify(email, password);
@@ -135,11 +132,12 @@ app.post("/login", (request, response) => {
     response.status(403).send("Error code 403");
   }
   request.session.email = email;
-  response.session.userID = userID;
+  // request.session.userID = userID;
   //   console.log(request.body);
   response.redirect("/urls");
 });
 
+//clicking logout
 app.post("/logout", (request, response) => {
   request.session = null;
   response.redirect("/urls");
