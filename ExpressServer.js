@@ -1,14 +1,12 @@
 const express = require("express");
 const app = express();
-const PORT = 8080; //8080 is default port
+const PORT = 8080;
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
 const bcrypt = require("bcryptjs");
 const cookieSession = require("cookie-session");
-const { userDatabase, findUser, verify } = require("./Helpers");
+const { userDatabase, urlDatabase, findUser, verify, userURLs } = require("./Helpers");
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
 app.use(cookieSession({
   name: "session",
   keys: ["key0"]
@@ -16,20 +14,7 @@ app.use(cookieSession({
 
 app.set("view engine", "ejs");
 
-const urlDatabase =
-{
-  "b2xVn2": {
-    longURL: "https://www.lighthouselabs.ca",
-    userID: "userRandomID"
-  },
-  "9sm5xK": {
-    longURL: "https://www.google.com",
-    userID: "user2RandomID"
-  }
-};
-
 app.get("/", (request, response) => {
-  console.log(hashedPassword);
   response.send("Hello!");
 });
 
@@ -42,110 +27,94 @@ app.get("/hello", (request, response) => {
 });
 
 app.get("/urls", (request, response) => {
-
-  const template = { urls: urlDatabase, email: request.cookies["email"] }
-  response.render("Index", template);
+  const userID = request.session.userID;
+  const template = {urls: userURLs(userID), email: request.session.email };
+    response.render("Index", template);
 });
 
+//Takes in longURL, creates userID cookie, and generates random string for urlID to make newURL object and adding it to urlDatabase
 app.post("/urls", (request, response) => {
-  console.log(request.body);
   const longURL = request.body.longURL;
-  const userID = request.cookies["userID"];
-  // console.log(request.body.urlContent);
+  const userID = request.session.userID;
   const urlID = Math.random().toString(36).slice(2, 8);
-  //response.send("200 Status code");
   const newURL = { urlID, longURL, userID };
   urlDatabase[urlID] = newURL;
-  console.log(urlDatabase);
-  response.redirect("/urls/:shortURL");
-  //response.send("Ok");
+  response.redirect("/urls/" + urlID);
 });
-//request.body = information from forms
-//request.params = information from  url
 
+//Redirects to login if not logged in
 app.get("/urls/new", (request, response) => {
-
-  const template = { urls: urlDatabase, email: request.cookies["email"], };
-  if (!request.cookies["email"]) {
-    console.log("Error code 403. Please login to make new tiny URLs");
+  const template = { urls: urlDatabase, email: request.session.email };
+  if (!request.session.email) {
     response.redirect("/login");
   }
   response.render("New", template);
 });
 
 app.get("/urls/:shortURL", (request, response) => {
-  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL].longURL, email: request.cookies["email"] };
-  console.log(urlDatabase[request.params.shortURL].longURL);
-  //("/urls/:shortURL" === shortURL: request.params.shortURL
+  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL].longURL, email: request.session.email };
   response.render("Show", template);
 });
 
-app.get("/u/:shortURL", (request, response) => { //get: show page
+app.get("/u/:shortURL", (request, response) => {
   const shortURL = request.params.shortURL;
-  const longURL = urlDatabase[shortURL].longURL; //longURL is object
-  response.redirect(longURL); //longURL not defined
+  const longURL = urlDatabase[shortURL].longURL;
+  response.redirect(longURL);
 });
-//handler = post or get
-//post => SEND DATA
 
 app.post("/urls/:shortURL", (request, response) => {
-  const shortURL = request.params.shortURL; //accessing the variable
+  const shortURL = request.params.shortURL;
   const longURL = request.body.longURL;
-  urlDatabase[shortURL] = longURL;
+  urlDatabase[shortURL].longURL = longURL;
   response.redirect("/urls");
-}) //:variable = making variable
+});
 
 app.post("/urls/:shortURL/delete", (request, response) => {
   delete urlDatabase[request.params.shortURL];
   response.redirect("/urls");
 });
-//ALWAYS console.log response(body)/response.body and/or request.params
 
 app.get("/register", (request, response) => {
-  const template = { email: request.cookies["email"] };
+  const template = { email: request.session.email };
   response.render("Register", template);
 });
 
+//Registers user in userDatabase if email is not already used. Hashes password and encrypts userID for security
 app.post("/register", (request, response) => {
   const { email, password } = request.body;
   const user = findUser(userDatabase, email);
-  // console.log(userDatabase[email]);
   if (email === "" || password === "" || user) {
     response.status(400).send("Registration failed. Error code 400");
-  };
+  }
   const userID = Math.random().toString(36).slice(2, 8);
-  response.cookie("email", email);
-  response.cookie("userID", userID);
+  request.session.email = email;
+  request.session.userID = userID;
   const salt = bcrypt.genSaltSync(10);
   const hashed = bcrypt.hashSync(password, salt);
   const newUser = { userID, email, password: hashed };
   userDatabase[userID] = newUser;
-  console.log(userDatabase);
   response.redirect("/urls");
 });
 
 app.get("/login", (request, response) => {
-  const template = { email: request.cookies["email"] };
+  const template = { email: request.session.email };
   response.render("Login", template);
 });
 
-
+//Verifies if email and password are correct
 app.post("/login", (request, response) => {
-  // request.body { email: "email", password: "password" }
   const { email, password } = request.body;
-  
   const user = verify(email, password);
   if (!user) {
-    response.status(403).send("Error code 403");
+    response.status(403).send("Login failed. Error code 403");
   }
-  response.cookie("userID", request.body.userID);
-  response.cookie("email", request.body.email);
-  //   console.log(request.body);
+  request.session.email = email;
   response.redirect("/urls");
 });
 
+//Deletes cookies
 app.post("/logout", (request, response) => {
-  response.clearCookie("email");
+  request.session = null;
   response.redirect("/urls");
 });
 
