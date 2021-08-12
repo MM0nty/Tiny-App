@@ -11,27 +11,47 @@ const userDatabase = {
     email: "user2@example.com",
     password: "dishwasher-funk"
   }
-}
+};
 
-const findUser = function (userDatabase, email) { //same Database but not same Database
+const urlDatabase = {
+  "b2xVn2": {
+    longURL: "https://www.lighthouselabs.ca",
+    userID: "userRandomID"
+  },
+  "9sm5xK": {
+    longURL: "https://www.google.com",
+    userID: "user2RandomID"
+  }
+};
+
+//Takes in email and looks through userDatabase to find if it's already used, then returns it. If not, it returns null
+const findUser = function(userDatabase, email) {
   for (const user in userDatabase) {
-    console.log("User ", user);
-    if (email === userDatabase[user].email) { //user is string
+    if (email === userDatabase[user].email) {
       return userDatabase[user];
     }
   }
   return null;
-}
+};
 
+//Takes in email and password and returns valid user
 const verify = (email, password) => {
   const user = findUser(userDatabase, email);
-  const match = bcrypt.compareSync(password, user.password);
-  console.log("Password ", password);
-  console.log("User.password ", user.password);
-  if (user && match === true) {
-    return user
+  if (user && bcrypt.compareSync(password, user.password)) {
+    return user;
   }
-  return null;
+  return undefined;
+};
+
+//Takes in userID, looks through urlDatabase and returns URLs with your userID
+const userURLs = function(userID) {
+  let filteredUrls = {};
+  for (urlID in urlDatabase) {
+    if (urlDatabase[urlID].userID === userID) {
+      filteredUrls[urlID] = urlDatabase[urlID];
+    }
+  }
+  return filteredUrls;
 }
 
-module.exports = { userDatabase, findUser, verify };
+module.exports = { userDatabase, urlDatabase, findUser, verify, userURLs };
