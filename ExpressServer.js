@@ -7,11 +7,6 @@ const bodyParser = require("body-parser");
 const { response } = require("express");
 app.use(bodyParser.urlencoded({extended: true}));
 
-function generator() {
-  const urlID = Math.random().toString(36).slice(2, 8);
-  return urlID;
-}
-
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -35,8 +30,10 @@ app.get("/urls", (request, response) => {
 });
 
 app.post("/urls", (request, response) => {
-  console.log(request.body);  // Log the POST request body to the console
-  response.send("Ok");         // Respond with 'Ok' (we will replace this)
+  const longURL = request.body.longURL;
+  const urlID = Math.random().toString(36).slice(2, 8);
+  urlDatabase[urlID] = longURL;
+  response.redirect("/urls/" + urlID);
 });
 
 app.get("/urls/new", (request, response) => {
@@ -46,6 +43,12 @@ app.get("/urls/new", (request, response) => {
 app.get("/urls/:shortURL", (request, response) => {
   const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL]/* What goes here? */ };
   response.render("Show", template);
+});
+
+app.get("/u/:shortURL", (request, response) => {
+  const shortURL = request.params.shortURL;
+  const longURL = urlDatabase[shortURL];
+  response.redirect(longURL);
 });
 
 app.listen(PORT, () => {
