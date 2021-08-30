@@ -3,6 +3,10 @@ const app = express();
 const PORT = 8080;
 
 app.set("view engine", "ejs");
+const bodyParser = require("body-parser");
+const { response } = require("express");
+app.use(bodyParser.urlencoded({extended: true}));
+
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -24,6 +28,15 @@ app.get("/hello", (request, response) => {
 app.get("/urls", (request, response) => {
   const template = { urls: urlDatabase };
   response.render("Index", template);
+});
+
+app.post("/urls", (request, response) => {
+  console.log(request.body);  // Log the POST request body to the console
+  response.send("Ok");         // Respond with 'Ok' (we will replace this)
+});
+
+app.get("/urls/new", (request, response) => {
+  response.render("New");
 });
 
 app.get("/urls/:shortURL", (request, response) => {
