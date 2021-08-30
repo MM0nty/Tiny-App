@@ -7,6 +7,10 @@ const bodyParser = require("body-parser");
 const { response } = require("express");
 app.use(bodyParser.urlencoded({extended: true}));
 
+function generator() {
+  const urlID = Math.random().toString(36).slice(2, 8);
+  return urlID;
+}
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
