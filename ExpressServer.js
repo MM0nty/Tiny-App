@@ -4,7 +4,6 @@ const PORT = 8080;
 
 app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
-const { response } = require("express");
 app.use(bodyParser.urlencoded({extended: true}));
 
 const urlDatabase = {
@@ -49,6 +48,11 @@ app.get("/u/:shortURL", (request, response) => {
   const shortURL = request.params.shortURL;
   const longURL = urlDatabase[shortURL];
   response.redirect(longURL);
+});
+
+app.post("/urls/:shortURL/delete", (request, response) => {
+  delete urlDatabase[request.params.shortURL];
+  response.redirect("/urls");
 });
 
 app.listen(PORT, () => {
