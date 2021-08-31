@@ -39,15 +39,22 @@ app.get("/urls/new", (request, response) => {
   response.render("New");
 });
 
+app.get("/u/:shortURL", (request, response) => {
+  const shortURL = request.params.shortURL;
+  const longURL = urlDatabase[shortURL];
+  response.redirect(longURL);
+});
+
 app.get("/urls/:shortURL", (request, response) => {
   const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL]/* What goes here? */ };
   response.render("Show", template);
 });
 
-app.get("/u/:shortURL", (request, response) => {
+app.post("/urls/:shortURL", (request, response) => {
   const shortURL = request.params.shortURL;
-  const longURL = urlDatabase[shortURL];
-  response.redirect(longURL);
+  const longURL = request.body.longURL;
+  urlDatabase[shortURL] = longURL;
+  response.redirect("/urls");
 });
 
 app.post("/urls/:shortURL/delete", (request, response) => {
