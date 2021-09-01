@@ -4,7 +4,11 @@ const PORT = 8080;
 
 app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
+const { request, response } = require("express");
 app.use(bodyParser.urlencoded({extended: true}));
+const cookieParser = require('cookie-parser');
+const { Template } = require("ejs");
+app.use(cookieParser());
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -24,7 +28,7 @@ app.get("/hello", (request, response) => {
 });
 
 app.get("/urls", (request, response) => {
-  const template = { urls: urlDatabase };
+  const template = { urls: urlDatabase, username: request.cookies["username"] };
   response.render("Index", template);
 });
 
@@ -36,7 +40,8 @@ app.post("/urls", (request, response) => {
 });
 
 app.get("/urls/new", (request, response) => {
-  response.render("New");
+  const template = { username: request.cookies["username"]}
+  response.render("New", template);
 });
 
 app.get("/u/:shortURL", (request, response) => {
@@ -46,7 +51,7 @@ app.get("/u/:shortURL", (request, response) => {
 });
 
 app.get("/urls/:shortURL", (request, response) => {
-  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL]/* What goes here? */ };
+  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL]/* What goes here? */, username: request.cookies["username"] };
   response.render("Show", template);
 });
 
@@ -54,11 +59,23 @@ app.post("/urls/:shortURL", (request, response) => {
   const shortURL = request.params.shortURL;
   const longURL = request.body.longURL;
   urlDatabase[shortURL] = longURL;
-  response.redirect("/urls");
+  const template = { username: request.cookies["username"]}
+  response.render("Index", template);
 });
 
 app.post("/urls/:shortURL/delete", (request, response) => {
   delete urlDatabase[request.params.shortURL];
+  response.render("Index", template);
+});
+
+app.post("/login", (request, response) => {
+  const username = request.body.username;
+  response.cookie("username", username);
+  response.redirect("/urls");
+})
+
+app.post("/logout", (request, response) => {
+  response.clearCookie("username");
   response.redirect("/urls");
 });
 
