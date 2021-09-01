@@ -5,7 +5,7 @@ const PORT = 8080;
 app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 const { request, response } = require("express");
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 const cookieParser = require('cookie-parser');
 const { Template } = require("ejs");
 app.use(cookieParser());
@@ -28,6 +28,15 @@ const userDatabase = {
   }
 };
 
+const findUser = function (userDatabase, email) {
+  for (const user in userDatabase) {
+    if (email === userDatabase[user].email) {
+      return userDatabase[user];
+    }
+  }
+  return null;
+};
+
 app.get("/", (request, response) => {
   response.send("Hello!");
 });
@@ -41,7 +50,7 @@ app.get("/hello", (request, response) => {
 });
 
 app.get("/urls", (request, response) => {
-  const template = { urls: urlDatabase, email: request.cookies["email"]};
+  const template = { urls: urlDatabase, email: request.cookies["email"] };
   response.render("Index", template);
 });
 
@@ -53,7 +62,7 @@ app.post("/urls", (request, response) => {
 });
 
 app.get("/urls/new", (request, response) => {
-  const template = { email: request.cookies["email"]};
+  const template = { email: request.cookies["email"] };
   response.render("New", template);
 });
 
@@ -64,7 +73,7 @@ app.get("/u/:shortURL", (request, response) => {
 });
 
 app.get("/urls/:shortURL", (request, response) => {
-  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL]/* What goes here? */, email: request.cookies["email"]};
+  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL]/* What goes here? */, email: request.cookies["email"] };
   response.render("Show", template);
 });
 
@@ -72,7 +81,7 @@ app.post("/urls/:shortURL", (request, response) => {
   const shortURL = request.params.shortURL;
   const longURL = request.body.longURL;
   urlDatabase[shortURL] = longURL;
-  const template = { email: request.cookies["email"]};
+  const template = { email: request.cookies["email"] };
   response.render("Index", template);
 });
 
@@ -82,21 +91,13 @@ app.post("/urls/:shortURL/delete", (request, response) => {
 });
 
 app.get("/register", (request, response) => {
-  const template = { email: request.cookies["email"]};
+  const template = { email: request.cookies["email"] };
   // const template = { email: request.session.email };
   response.render("Register", template);
 });
 
 app.post("/register", (request, response) => {
   const { email, password } = request.body;
-  const findUser = function(userDatabase, email) {
-    for (const user in userDatabase) {
-      if (email === userDatabase[user].email) {
-        return userDatabase[user];
-      }
-    }
-    return null;
-  };
   const user = findUser(userDatabase, email);
   if (email === "" || password === "" || user) {
     response.status(400).send("Registration failed. Error code 400");
@@ -106,18 +107,27 @@ app.post("/register", (request, response) => {
   userDatabase[userID] = newUser;
   response.cookie("email", email);
   response.cookie("userID", userID);
-  console.log("userDatabase:", userDatabase);
+  console.log(userDatabase);
   response.redirect("/urls");
 });
 
 app.get("/login", (request, response) => {
-  response.cookie("email", email);
+  const template = { email: request.cookies["email"] };
   response.render("Login", template);
 });
 
 app.post("/login", (request, response) => {
   const { email, password } = request.body;
-  response.cookie("email", email);
+  const user = findUser(userDatabase, email);
+  if (password !== user.password) {
+    response.status(403).send("Login failed. Error code 403");
+  }
+  if (user && password === user.password) {
+    response.cookie("email", email);
+    response.cookie("userID", user.userID);
+    // return user;
+  }
+  console.log("Test");
   response.redirect("/urls");
 })
 
