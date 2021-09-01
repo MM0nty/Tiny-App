@@ -89,8 +89,16 @@ app.get("/register", (request, response) => {
 
 app.post("/register", (request, response) => {
   const { email, password } = request.body;
-  // const user = findUser(userDatabase, email);
-  if (email === "" || password === "") {//} || user) {
+  const findUser = function(userDatabase, email) {
+    for (const user in userDatabase) {
+      if (email === userDatabase[user].email) {
+        return userDatabase[user];
+      }
+    }
+    return null;
+  };
+  const user = findUser(userDatabase, email);
+  if (email === "" || password === "" || user) {
     response.status(400).send("Registration failed. Error code 400");
   }
   const userID = Math.random().toString(36).slice(2, 8);
@@ -102,14 +110,19 @@ app.post("/register", (request, response) => {
   response.redirect("/urls");
 });
 
+app.get("/login", (request, response) => {
+  response.cookie("email", email);
+  response.render("Login", template);
+});
+
 app.post("/login", (request, response) => {
-  const email = request.body.email;
+  const { email, password } = request.body;
   response.cookie("email", email);
   response.redirect("/urls");
 })
 
 app.post("/logout", (request, response) => {
-  response.clearCookie("email");
+  response.clearCookie("email", "userID");
   response.redirect("/urls");
 });
 
