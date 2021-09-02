@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const PORT = 8080;
+const bcrypt = require("bcryptjs");
 
 app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
@@ -37,6 +38,16 @@ const findUser = function (userDatabase, email) {
   return null;
 };
 
+const userURLs = function (userID) {
+  const filteredURLs = {};
+  for (shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === userID) {
+      filteredURLs[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return filteredURLs;
+}
+
 app.get("/", (request, response) => {
   response.send("Hello!");
 });
@@ -50,7 +61,8 @@ app.get("/hello", (request, response) => {
 });
 
 app.get("/urls", (request, response) => {
-  const template = { urls: urlDatabase, email: request.cookies["email"] };
+  const userID = request.cookies.userID;
+  const template = { urls: userURLs(userID), email: request.cookies["email"] };
   response.render("Index", template);
 });
 
@@ -60,7 +72,6 @@ app.post("/urls", (request, response) => {
   const shortURL = Math.random().toString(36).slice(2, 8);
   const newURL = { longURL, userID };
   urlDatabase[shortURL] = newURL;
-  console.log("urlDatabase:", urlDatabase);
   response.redirect("/urls/" + shortURL);
 });
 
@@ -74,12 +85,12 @@ app.get("/urls/new", (request, response) => {
 
 app.get("/u/:shortURL", (request, response) => {
   const shortURL = request.params.shortURL;
-  const longURL = urlDatabase[shortURL];
+  const longURL = urlDatabase[request.params.shortURL].longURL;
   response.redirect(longURL);
 });
 
 app.get("/urls/:shortURL", (request, response) => {
-  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL].longURL/* What goes here? */, email: request.cookies["email"] };
+  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL].longURL, email: request.cookies["email"] };
   response.render("Show", template);
 });
 
@@ -92,7 +103,11 @@ app.post("/urls/:shortURL", (request, response) => {
 });
 
 app.post("/urls/:shortURL/delete", (request, response) => {
-  delete urlDatabase[request.params.shortURL];
+  const template = { email: request.cookies["email"] };
+  if (request.cookies["email"]) {
+    //Fix deleting (then editing)
+    delete urlDatabase[request.params.shortURL];
+  }
   response.render("Index", template);
 });
 
@@ -106,14 +121,16 @@ app.post("/register", (request, response) => {
   const { email, password } = request.body;
   const user = findUser(userDatabase, email);
   if (email === "" || password === "" || user) {
-    response.status(400).send("Registration failed. Error code 400");
+    response.redirect(400, "/register");
   }
   const userID = Math.random().toString(36).slice(2, 8);
-  const newUser = { userID, email, password };
+  const salt = bcrypt.genSaltSync(10);
+  const hashed = bcrypt.hashSync(password, salt);
+  const newUser = { userID, email, password: hashed };
   userDatabase[userID] = newUser;
+  console.log("userDatabase:", userDatabase);
   response.cookie("email", email);
   response.cookie("userID", userID);
-  console.log(userDatabase);
   response.redirect("/urls");
 });
 
@@ -125,14 +142,12 @@ app.get("/login", (request, response) => {
 app.post("/login", (request, response) => {
   const { email, password } = request.body;
   const user = findUser(userDatabase, email);
-  if (password !== user.password) {
-    response.status(403).send("Login failed. Error code 403");
-  }
-  if (user && password === user.password) {
+  if (user && bcrypt.compareSync(password, user.password)) {
     response.cookie("email", email);
     response.cookie("userID", user.userID);
+    return response.redirect("/urls");
   }
-  response.redirect("/urls");
+  return response.redirect(403, "/login");
 })
 
 app.post("/logout", (request, response) => {
