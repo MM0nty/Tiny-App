@@ -11,8 +11,8 @@ const { Template } = require("ejs");
 app.use(cookieParser());
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca" },
+  "9sm5xK": { longURL: "http://www.google.com" }
 };
 
 const userDatabase = {
@@ -56,13 +56,19 @@ app.get("/urls", (request, response) => {
 
 app.post("/urls", (request, response) => {
   const longURL = request.body.longURL;
-  const urlID = Math.random().toString(36).slice(2, 8);
-  urlDatabase[urlID] = longURL;
-  response.redirect("/urls/" + urlID);
+  const userID = request.cookies.userID;
+  const shortURL = Math.random().toString(36).slice(2, 8);
+  const newURL = { longURL, userID };
+  urlDatabase[shortURL] = newURL;
+  console.log("urlDatabase:", urlDatabase);
+  response.redirect("/urls/" + shortURL);
 });
 
 app.get("/urls/new", (request, response) => {
   const template = { email: request.cookies["email"] };
+  if (!request.cookies["email"]) {
+    response.redirect("/login");
+  }
   response.render("New", template);
 });
 
@@ -73,7 +79,7 @@ app.get("/u/:shortURL", (request, response) => {
 });
 
 app.get("/urls/:shortURL", (request, response) => {
-  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL]/* What goes here? */, email: request.cookies["email"] };
+  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL].longURL/* What goes here? */, email: request.cookies["email"] };
   response.render("Show", template);
 });
 
@@ -125,9 +131,7 @@ app.post("/login", (request, response) => {
   if (user && password === user.password) {
     response.cookie("email", email);
     response.cookie("userID", user.userID);
-    // return user;
   }
-  console.log("Test");
   response.redirect("/urls");
 })
 
