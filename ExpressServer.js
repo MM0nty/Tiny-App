@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 const bcrypt = require("bcryptjs");
+const { userDatabase, urlDatabase, findUser, userURLs } = require("./Helpers");
 
 app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
@@ -11,42 +12,6 @@ const cookieParser = require('cookie-parser');
 const { Template } = require("ejs");
 app.use(cookieParser());
 
-const urlDatabase = {
-  "b2xVn2": { longURL: "http://www.lighthouselabs.ca" },
-  "9sm5xK": { longURL: "http://www.google.com" }
-};
-
-const userDatabase = {
-  "userRandomID": {
-    userID: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
-  },
-  "user2RandomID": {
-    userID: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
-  }
-};
-
-const findUser = function (userDatabase, email) {
-  for (const user in userDatabase) {
-    if (email === userDatabase[user].email) {
-      return userDatabase[user];
-    }
-  }
-  return null;
-};
-
-const userURLs = function (userID) {
-  const filteredURLs = {};
-  for (shortURL in urlDatabase) {
-    if (urlDatabase[shortURL].userID === userID) {
-      filteredURLs[shortURL] = urlDatabase[shortURL];
-    }
-  }
-  return filteredURLs;
-}
 
 app.get("/", (request, response) => {
   response.send("Hello!");
