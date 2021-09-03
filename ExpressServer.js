@@ -146,7 +146,7 @@ app.post("/login", (request, response) => {
 //Deletes all cookies
 app.post("/logout", (request, response) => {
   request.session = null;
-  response.redirect("/login");
+  response.redirect("/urls");
 });
 
 app.listen(PORT, () => {
