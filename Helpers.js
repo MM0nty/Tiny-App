@@ -29,17 +29,6 @@ const findUser = function(userDatabase, email) {
   return null;
 };
 
-/*
-//Takes in email and password and returns valid user
-const verify = (email, password) => {
-  const user = findUser(userDatabase, email);
-  if (user && bcrypt.compareSync(password, user.password)) {
-    return user;
-  }
-  return undefined;
-};
-*/
-
 //Takes in userID, looks through urlDatabase and returns URLs with your userID
 const userURLs = function(userID) {
   const filteredURLs = {};
