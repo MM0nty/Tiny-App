@@ -1,8 +1,8 @@
 const bcrypt = require("bcryptjs");
 
 const urlDatabase = {
-  "b2xVn2": { longURL: "http://www.lighthouselabs.ca" },
-  "9sm5xK": { longURL: "http://www.google.com" }
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "null" },
+  "9sm5xK": { longURL: "http://www.google.com", userID: "null" }
 };
 
 const userDatabase = {
@@ -18,6 +18,8 @@ const userDatabase = {
   }
 };
 
+//Creates random string of 6 alphanumericals
+const identity = Math.random().toString(36).slice(2, 8);
 
 //Takes in email and looks through userDatabase to find if it's already used, then returns it. If not, it returns null
 const findUser = function(userDatabase, email) {
@@ -38,6 +40,6 @@ const userURLs = function(userID) {
     }
   }
   return filteredURLs;
-}
+};
 
-module.exports = { userDatabase, urlDatabase, findUser, userURLs };
+module.exports = { userDatabase, urlDatabase, identity, findUser, userURLs };

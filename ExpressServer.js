@@ -1,10 +1,10 @@
 const express = require("express");
+const bodyParser = require("body-parser");
+const cookieSession = require("cookie-session");
+const bcrypt = require("bcryptjs");
+const { userDatabase, urlDatabase, identity, findUser, userURLs } = require("./Helpers");
 const app = express();
 const PORT = 8080;
-const bodyParser = require("body-parser");
-const bcrypt = require("bcryptjs");
-const cookieSession = require("cookie-session");
-const { userDatabase, urlDatabase, findUser, userURLs } = require("./Helpers");
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -14,15 +14,11 @@ app.use(cookieSession({
 }));
 
 app.get("/", (request, response) => {
-  response.send("Hello!");
-});
-
-app.get("/urls.json", (request, response) => {
-  response.json(urlDatabase);
-});
-
-app.get("/hello", (request, response) => {
-  response.send("<html><body>Hello <b>World</b></body></html>\n");
+  const userID = request.session.userID;
+  if (!userID) {
+    return response.redirect("/login");
+  }
+  response.redirect("/urls");
 });
 
 app.get("/urls", (request, response) => {
@@ -30,7 +26,7 @@ app.get("/urls", (request, response) => {
   if (!userID) {
     return response.redirect(403, "/login");
   }
-  const template = { urls: urlDatabase, email: request.session.email };
+  const template = { urls: userURLs(userID), email: request.session.email };
   response.render("Index", template);
 });
 
@@ -41,7 +37,7 @@ app.post("/urls", (request, response) => {
     return response.redirect(403, "/login");
   }
   const longURL = request.body.longURL;
-  const shortURL = Math.random().toString(36).slice(2, 8);
+  const shortURL = identity;
   const newURL = { longURL, userID };
   urlDatabase[shortURL] = newURL;
   response.redirect("/urls/" + shortURL);
@@ -67,10 +63,13 @@ app.get("/u/:shortURL", (request, response) => {
 
 app.get("/urls/:shortURL", (request, response) => {
   const userID = request.session.userID;
-  if (!request.session.email || userID !== urlDatabase[request.params.shortURL].userID) {
+  const shortURL = request.params.shortURL;
+  const longURL = urlDatabase[shortURL].longURL;
+  const email = request.session.email;
+  if (!email || userID !== urlDatabase[shortURL].userID) {
     return response.redirect(400, "/urls");
   }
-  const template = { shortURL: request.params.shortURL, longURL: urlDatabase[request.params.shortURL].longURL, email: request.session.email };
+  const template = { shortURL, longURL, email };
   response.render("Show", template);
 });
 
@@ -82,16 +81,17 @@ app.post("/urls/:shortURL", (request, response) => {
   }
   const longURL = request.body.longURL;
   urlDatabase[shortURL].longURL = longURL;
-  const template = { urls: urlDatabase, email: request.session.email };
+  const template = { urls: userURLs(userID), email: request.session.email };
   response.render("Index", template);
 });
 
 app.post("/urls/:shortURL/delete", (request, response) => {
   const userID = request.session.userID;
-  if (!userID || userID !== urlDatabase[request.params.shortURL].userID) {
+  const shortURL = request.params.shortURL;
+  if (!userID || userID !== urlDatabase[shortURL].userID) {
     return response.redirect(400, "/urls");
   }
-  delete urlDatabase[request.params.shortURL];
+  delete urlDatabase[shortURL];
   response.redirect("/urls");
 });
 
@@ -111,7 +111,7 @@ app.post("/register", (request, response) => {
   if (email === "" || password === "" || user) {
     return response.redirect(400, "/register");
   }
-  const userID = Math.random().toString(36).slice(2, 8);
+  const userID = identity;
   //Hashes password and encrypts cookies for security
   const salt = bcrypt.genSaltSync(10);
   const hashed = bcrypt.hashSync(password, salt);
@@ -146,7 +146,7 @@ app.post("/login", (request, response) => {
 //Deletes all cookies
 app.post("/logout", (request, response) => {
   request.session = null;
-  response.redirect("/urls");
+  response.redirect("/login");
 });
 
 app.listen(PORT, () => {
