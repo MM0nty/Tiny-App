@@ -37,6 +37,7 @@ app.post("/urls", (request, response) => {
     return response.redirect(403, "/login");
   }
   const longURL = request.body.longURL;
+  //Not in a variable because it would make all IDs identical
   const shortURL = Math.random().toString(36).slice(2, 8);
   const newURL = { longURL, userID };
   urlDatabase[shortURL] = newURL;
