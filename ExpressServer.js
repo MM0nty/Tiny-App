@@ -2,7 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
-const { userDatabase, urlDatabase, findUser, userURLs } = require("./Helpers");
+const { userDatabase, urlDatabase, identity, findUser, userURLs } = require("./Helpers");
 const app = express();
 const PORT = 8080;
 
@@ -38,7 +38,7 @@ app.post("/urls", (request, response) => {
   }
   const longURL = request.body.longURL;
   //Not in a variable because it would make all IDs identical
-  const shortURL = Math.random().toString(36).slice(2, 8);
+  const shortURL = identity();
   const newURL = { longURL, userID };
   urlDatabase[shortURL] = newURL;
   response.redirect("/urls/" + shortURL);
@@ -113,7 +113,7 @@ app.post("/register", (request, response) => {
     return response.redirect(400, "/register");
   }
   //Creates random string of 6 alphanumericals. Not in a variable because it would make all IDs identical
-const userID = Math.random().toString(36).slice(2, 8);
+const userID = identity();
   //Hashes password and encrypts cookies for security
   const salt = bcrypt.genSaltSync(10);
   const hashed = bcrypt.hashSync(password, salt);

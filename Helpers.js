@@ -18,6 +18,10 @@ const userDatabase = {
   }
 };
 
+const identity = function() {
+  return Math.random().toString(36).slice(2, 8);
+}
+
 //Takes in email and looks through userDatabase to find if it's already used, then returns it. If not, it returns null
 const findUser = function(userDatabase, email) {
   for (const user in userDatabase) {
@@ -39,4 +43,4 @@ const userURLs = function(userID) {
   return filteredURLs;
 };
 
-module.exports = { userDatabase, urlDatabase, findUser, userURLs };
+module.exports = { userDatabase, urlDatabase, identity, findUser, userURLs };
